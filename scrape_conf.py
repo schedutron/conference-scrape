@@ -44,30 +44,30 @@ def parse_papercall(ele):
         if prefix:
             title = prefix[0] + ': ' + title # Adds 'Pro Event: ' if present.
         data['title'] = title
-    except:
+    except Exception:
         pass
     # This gets the conference location.
     try:
         if len(title_with_loc) > 1:
             data['location'] = title_with_loc[-1]
-    except:
+    except Exception:
         pass
     # This gets the conference time.
     try:
         time_prefix = ele.xpath('.//h4[1]/text()')[0].strip()
         time_value = ele.xpath('.//h4[1]/time/text()')[0].strip()
         data['time'] = time_prefix + ' ' + time_value
-    except:
+    except Exception:
         pass
     #This gets the conference link.
     try:
         data['link'] = ele.xpath('.//h4[2]/a/@href')[0]
-    except:
+    except Exception:
         pass
     # This gets the conference tags.
     try:
         data['tags'] = ele.xpath('.//h4[last()]/span/text()')[0].strip().split(', ')
-    except:
+    except Exception:
         pass
     # This gets the conference description.
     try:
@@ -77,7 +77,7 @@ def parse_papercall(ele):
             description = des_prefix + '; ' + description
         if description:
             data['description'] = description
-    except:
+    except Exception:
         pass
 
     return data
