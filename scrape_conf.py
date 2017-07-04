@@ -75,7 +75,8 @@ def parse_papercall(ele):
         description = ele.xpath('.//div[@class="event__links"]/text()')[0].strip().lstrip('# ')
         if des_prefix:
             description = des_prefix + '; ' + description
-        data['description'] = description
+        if description:
+            data['description'] = description
     except:
         pass
 
