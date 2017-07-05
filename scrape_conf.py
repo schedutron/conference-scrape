@@ -1,5 +1,10 @@
-"""Script to scrape worldwide conferences' info"""
-
+"""Script to scrape worldwide conferences' info
+Sources:
+https://www.papercall.io
+https://www.oreilly.com/conferences/
+https://opensource.com/resources/conferences-and-events-monthly
+http://lanyrd.com/topics/open-source/
+"""
 from lxml import html
 import requests
 
@@ -8,7 +13,7 @@ metadata = ['title', 'description', 'location', 'time', 'tags', 'link', 'source'
 
 def from_papercall():
     """
-    Function to scrape conferences' info from www.papercall.io
+    Function to scrape conferences' info from https://www.papercall.io
     Loads the page, gets the conference info tags, and sends each tag
     to parse_papercall() for parsing
     """
@@ -77,6 +82,72 @@ def parse_papercall(ele):
             description = des_prefix + '; ' + description
         if description:
             data['description'] = description
+    except Exception:
+        pass
+
+    return data
+
+
+def from_oreilly():
+    """
+    Function to scrape conferences' info from https://www.oreilly.com/conferences/
+    Loads the page, gets the conference info tags, and sends each tag
+    to parse_oreilly() for parsing
+    """
+    page = requests.get('https://www.oreilly.com/conferences/')
+    tree = html.fromstring(page.content)
+    conf_list = tree.xpath('//li[@class="conf_event"]')
+    total = []
+    for ele in conf_list:
+        total.append(parse_oreilly(ele))
+    return total
+
+
+def parse_oreilly(ele):
+    """
+    Function to parse info passed by from_oeilly() function.
+    Returns conference info in a JSON format, like other parser functions.
+    """
+    data = dict.fromkeys(metadata)
+    data['source'] = 'https://www.oreilly.com/conferences/'
+    # This gets the conference title.
+    try:
+        text = ele.xpath('.//h3//text()')
+        data['title'] = text[0].strip()
+    except Exception:
+        pass
+    # This gets the conference date.
+    try:
+        start_date = str(text[2]).replace('\xa0', ' ')
+        remaining_date_with_loc = text[3].strip()
+        comma_pos = remaining_date_with_loc.find(',')
+        comma_pos = remaining_date_with_loc.find(',', comma_pos+1)
+        remaining_date = remaining_date_with_loc[:comma_pos].strip('\u2013')
+        data['time'] = start_date + ' - ' + remaining_date
+        # Following adds training dates.
+        #try:
+        training_dates = text[4]
+        training_dates = training_dates.strip()
+        training_dates = training_dates.replace('\xa0', ' ').replace('\u2013', '-')
+        data['time'] += ' ' + training_dates
+        #except IndexError:
+        #    pass
+
+    except Exception:
+        pass
+    # This gets the conference location.
+    try:
+        data['location'] = remaining_date_with_loc[comma_pos+1:].strip()
+    except Exception:
+        pass
+    # This gets the conference link.
+    try:
+        data['link'] = ele.xpath('.//h3/a/@href')[0]
+    except Exception:
+        pass
+    # This gets the conference description.
+    try:
+        data['description'] = ele.xpath('.//p/text()')[0].strip()
     except Exception:
         pass
 
