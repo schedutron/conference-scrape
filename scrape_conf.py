@@ -1,13 +1,15 @@
 """Script to scrape worldwide conferences' info
 Sources:
-https://www.papercall.io
-https://www.oreilly.com/conferences/
+https://www.papercall.io - Done
+https://www.oreilly.com/conferences/ - Done
 https://opensource.com/resources/conferences-and-events-monthly
 http://lanyrd.com/topics/open-source/
 """
 from lxml import html
 import requests
 
+# Duplicates can be removed by comparing links.
+# If tags are absent, they can be added by analysing description.
 # Maybe later we can add conference image icons as well.
 metadata = ['title', 'description', 'location', 'time', 'tags', 'link', 'source']
 
@@ -76,7 +78,7 @@ def parse_papercall(ele):
         pass
     # This gets the conference description.
     try:
-        des_prefix = ele.xpath('.//h4[last()-1]/text()')[0].strip() # Has info on travel assistance etc.
+        des_prefix = ele.xpath('.//h4[last()-1]')[0].text_content().strip() # Has info on travel assistance etc.
         description = ele.xpath('.//div[@class="event__links"]/text()')[0].strip().lstrip('# ')
         if des_prefix:
             description = des_prefix + '; ' + description
@@ -125,14 +127,10 @@ def parse_oreilly(ele):
         remaining_date = remaining_date_with_loc[:comma_pos].strip('\u2013')
         data['time'] = start_date + ' - ' + remaining_date
         # Following adds training dates.
-        #try:
         training_dates = text[4]
         training_dates = training_dates.strip()
         training_dates = training_dates.replace('\xa0', ' ').replace('\u2013', '-')
         data['time'] += ' ' + training_dates
-        #except IndexError:
-        #    pass
-
     except Exception:
         pass
     # This gets the conference location.
@@ -147,7 +145,72 @@ def parse_oreilly(ele):
         pass
     # This gets the conference description.
     try:
-        data['description'] = ele.xpath('.//p/text()')[0].strip()
+        data['description'] = ele.xpath('.//p')[0].text_content().strip()
+    except Exception:
+        pass
+
+    return data
+
+
+def from_opensource():
+    """
+    Function to scrape conferences' info from:
+    https://opensource.com/resources/conferences-and-events-monthly
+    Loads the page, gets the conference info elements, and sends each element
+    to parse_opensource() for parsing
+    """
+    # This list accumulates all the conference info elements while pagination.
+    all_ele = []
+    next_page_link = "https://opensource.com/resources/conferences-and-events-monthly"
+    # Following loop paginates and accumulates the conference info elements.
+    while 1:
+        page = requests.get(next_page_link)
+        tree = html.fromstring(page.content)
+        container = tree.xpath('//*[@id="mini-panel-conferences_events_content"]/div[1]/div/div/div/div[2]')
+        stuff = container[0].xpath('./div')
+        if not stuff:
+            break
+        all_ele.extend(stuff)
+        next_page_link = tree.xpath('//*[@id="mini-panel-conferences_events_content"]/div[1]/div/div/div/div[3]/div/ul/li[2]/a/@href')[0]
+    # This list accumulates JSON data to be returned.
+    total = [parse_opensource(ele) for ele in all_ele]
+    return total
+
+
+def parse_opensource(ele):
+    """
+    Function to parse info passed by from_opensource() function.
+    Returns conference info in a JSON format, like other parser functions.
+    """
+    data = dict.fromkeys(metadata)
+    data['source'] = "https://opensource.com/resources/conferences-and-events-monthly"
+    # This gets the conference title.
+    try:
+        data['title'] = ele.xpath('.//b/text()')[0].strip()
+    except Exception:
+        pass
+    # This gets the conference description.
+    try:
+        des = '\n'.join([item.text_content() for item in ele.xpath('.//p')])
+        if len(des) > 500:
+            des = des[:497] + '...'
+        data['description'] = des
+    except Exception:
+        pass
+    # This gets the conference date(s)
+    try:
+        dates = ele.xpath('./div[4]/div/span/text()')
+        data['time'] = ' to '.join(dates).strip()
+    except Exception:
+        pass
+    # This gets the conference location
+    try:
+        data['location'] = ele.xpath('./div[5]/div/text()')[0].strip()
+    except Exception:
+        pass
+    # This gets the conference link
+    try:
+        data['link'] = ele.xpath('./div[6]/div/a/text()')[0]
     except Exception:
         pass
 
