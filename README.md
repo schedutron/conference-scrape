@@ -6,6 +6,8 @@ For a quick demo, do:
 import scrape_conf
 total = scrape_conf.from_paper_call()
 ```
+`from_oreilly()` and `from_opensource()` can also be used.
+
 For pretty output, do:
 ```
 import json
