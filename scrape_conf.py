@@ -2,8 +2,9 @@
 Sources:
 https://www.papercall.io - Done
 https://www.oreilly.com/conferences/ - Done
-https://opensource.com/resources/conferences-and-events-monthly
+https://opensource.com/resources/conferences-and-events-monthly - Done
 http://lanyrd.com/topics/open-source/
+http://events.linuxfoundation.org
 """
 from lxml import html
 import requests
