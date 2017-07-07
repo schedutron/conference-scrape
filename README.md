@@ -6,7 +6,7 @@ For a quick demo, do:
 import scrape_conf
 total = scrape_conf.from_paper_call()
 ```
-`from_oreilly()`, `from_opensource()` and `from_pycon_cal()` can also be used.
+`from_oreilly()`, `from_opensource()` and `from_pycon_calender()` can also be used.
 
 For pretty output, do:
 ```
