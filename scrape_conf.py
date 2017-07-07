@@ -5,11 +5,16 @@ https://www.oreilly.com/conferences/ - Done
 https://opensource.com/resources/conferences-and-events-monthly - Done
 http://lanyrd.com/topics/open-source/
 http://events.linuxfoundation.org
+https://twitter.com/PythonEvents
 """
 from lxml import html
+# import requests, datetime, ... can be used but it's against PEP8.
+import datetime
+import re
 import requests
 
 # Duplicates can be removed by comparing links.
+# Timezone problems must be addressed, if any.
 # If tags are absent, they can be added by analysing description.
 # Maybe later we can add conference image icons as well.
 metadata = ['title', 'description', 'location', 'time', 'tags', 'link', 'source']
@@ -212,6 +217,62 @@ def parse_opensource(ele):
     # This gets the conference link
     try:
         data['link'] = ele.xpath('./div[6]/div/a/text()')[0]
+    except Exception:
+        pass
+
+    return data
+
+
+def from_pycon_calender():
+    """
+    Function to get Python events calender from http://www.pycon.org
+    Sends calender contents to parse_pycon_calender() function for parsing.
+    """
+    calender = requests.get('https://www.google.com/calendar/ical/j7gov1cmnqr9tvg14k621j7t5c%40group.calendar.google.com/public/basic.ics')
+    calender_text = calender.text
+    # This splits the calender_text string into individual event infos
+    events = calender_text.split('BEGIN:VEVENT')[1:]
+    today = datetime.datetime.today().strftime('%Y%m%d')
+    # This loop used for stripping out previous events
+    for i in range(len(events)):
+     item = events[i]
+     dtend = re.search(r'DTEND(;VALUE=DATE)?:?(\S+)\r\n', item).groups()[-1]
+     if dtend < today:
+             break
+    events = events[:i]
+    total = [parse_pycon_calender(event) for event in events]
+    return total
+
+
+def parse_pycon_calender(ele):
+    """
+    Function to parse info passed by from_pycon_calender() function.
+    Returns conferences' info in a JSON format, like other parser functions.
+    """
+    data = dict.fromkeys(metadata)
+    data['source'] = 'http://www.pycon.org'
+    # This gets the conference time.
+    try:
+        dtstart = re.search(r'DTSTART(;VALUE=DATE)?:?(\S+)\r\n', ele).groups()[-1].rstrip()
+        dtend = re.search(r'DTEND(;VALUE=DATE)?:?(\S+)\r\n', ele).groups()[-1].rstrip()
+        data['time'] = dtstart + ' - ' + dtend
+    except Exception:
+        pass
+    # This gets the conference link.
+    try:
+        data['link'] = re.search(r'DESCRIPTION:<a href="(\S+?)>', ele).groups()[0][:-1]
+    except Exception:
+        pass
+    # This gets the conference location.
+    try:
+        data['location'] = re.search(r'LOCATION:([\s\S]+)SEQUENCE', ele).groups()[0].rstrip().replace('\r\n ', '')
+        data['location'] = data['location'].replace('\\', '')
+    except Exception:
+        pass
+    # This gets the conference title.
+    try:
+        data['title'] = re.search(r'SUMMARY:([\s\S]+)TRANSP:', ele).groups()[0].rstrip().replace('\r\n ', '')
+        data['title'] = data['title'].replace('\\', '')
     except Exception:
         pass
 
