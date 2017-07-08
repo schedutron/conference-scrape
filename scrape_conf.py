@@ -20,6 +20,19 @@ import requests
 # Maybe later we can add conference image icons as well.
 metadata = ['title', 'description', 'location', 'time', 'tags', 'link', 'source']
 
+
+def check(attrib):
+    """
+    Function to check parsing functions for correctness.
+    Helpful in debugging.
+    """
+    count = 0
+    for data in total:
+        if data[attrib] == None:
+            print(json, indent=4)
+            count += 1
+    print("Total: %s" % count)
+
 def from_papercall():
     """
     Function to scrape conferences' info from https://www.papercall.io
@@ -274,6 +287,58 @@ def parse_pycon_calender(ele):
     try:
         data['title'] = re.search(r'SUMMARY:([\s\S]+)TRANSP:', ele).groups()[0].rstrip().replace('\r\n ', '')
         data['title'] = data['title'].replace('\\', '')
+    except Exception:
+        pass
+
+    return data
+
+
+def from_lanyrd():
+    """
+    Function to scrape conferences' info from:
+    http://lanyrd.com/topics/open-source
+    Loads the page, gets the conference info elements, and sends each element
+    to parse_lanyrd() for parsing
+    """
+    page = requests.get('http://lanyrd.com/topics/open-source')
+    tree = html.fromstring(page.content)
+    conf_list = tree.xpath('//li[@class="conference vevent"]')
+    total = [parse_lanyrd(ele) for ele in conf_list]
+    return total
+
+
+def parse_lanyrd(ele):
+    """
+    Function to parse info passed by from_lanyrd() function.
+    Returns conferences' info in a JSON format, like other parser functions.
+    """
+    data = dict.fromkeys(metadata)
+    data['source'] = 'http://lanyrd.com/topics/open-source'
+    # This gets the conference title.
+    try:
+        title_ele = ele.xpath('.//h4/a')[0]
+        data['title'] = title_ele.text_content().strip()
+    except Exception:
+        pass
+    # This gets the conference link.
+    try:
+        data['link'] = data['source'] + title_ele.attrib['href']
+    except Exception:
+        pass
+    # This gets the conference location.
+    try:
+        reversed_location_chunks = ele.xpath('.//p[@class="location"]/a/text()')[1:]
+        data['location'] = ', '.join([chunk.strip() for chunk in reversed_location_chunks[::-1]])
+    except Exception:
+        pass
+    # This gets the conference time.
+    try:
+        data['time'] = ele.xpath('.//p[@class="date"]')[0].text_content()
+    except Exception:
+        pass
+    # This gets the conference tags.
+    try:
+        data['tags'] = ele.xpath('.//ul[@class="tags inline-tags meta"]/li/a/text()')
     except Exception:
         pass
 
