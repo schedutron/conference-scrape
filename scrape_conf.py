@@ -11,6 +11,7 @@ https://twitter.com/PythonEvents
 from lxml import html
 # import requests, datetime, ... can be used but it's against PEP8.
 import datetime
+import json
 import re
 import requests
 
@@ -29,7 +30,7 @@ def check(attrib):
     count = 0
     for data in total:
         if data[attrib] == None:
-            print(json, indent=4)
+            print(json.dumps(data, indent=4))
             count += 1
     print("Total: %s" % count)
 
@@ -140,24 +141,22 @@ def parse_oreilly(ele):
         pass
     # This gets the conference date.
     try:
-        start_date = str(text[2]).replace('\xa0', ' ')
+        start_date = text[2]
         remaining_date_with_loc = text[3].strip()
         comma_pos = remaining_date_with_loc.find(',')
         comma_pos = remaining_date_with_loc.find(',', comma_pos+1)
         remaining_date = remaining_date_with_loc[:comma_pos].strip('\u2013')
-        data['time'] = start_date + ' - ' + remaining_date
+        data['time'] = start_date + remaining_date
         # Following adds training dates.
-        training_dates = text[4]
-        training_dates = training_dates.strip()
-        training_dates = training_dates.replace('\xa0', ' ').replace('\u2013', '-')
+        training_dates = text[4].strip()
         data['time'] += ' ' + training_dates
-    except Exception:
+    except Exception as e:
         pass
     # This gets the conference location.
-    try:
-        data['location'] = remaining_date_with_loc[comma_pos+1:].strip()
-    except Exception:
-        pass
+    #try:
+    data['location'] = remaining_date_with_loc[comma_pos+1:].strip()
+    #except Exception:
+    #    pass
     # This gets the conference link.
     try:
         data['link'] = ele.xpath('.//h3/a/@href')[0]
