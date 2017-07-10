@@ -25,14 +25,26 @@ metadata = ['title', 'description', 'location', 'time', 'tags', 'link', 'source'
 def check(attrib):
     """
     Function to check parsing functions for correctness.
-    Helpful in debugging.
+    Helpful in debugging. Used in complete_check().
     """
     count = 0
-    for data in total:
+    for data in total: #total must be defined.
         if data[attrib] == None:
             print(json.dumps(data, indent=4))
             count += 1
     print("Total: %s" % count)
+
+
+def complete_check():
+    """
+    Function to check parsing functions's correctness
+    for each attribute in metadata.
+    """
+    for attrib in metadata:
+        print(attrib)
+        check(attrib)
+        print('-*-'*33)
+
 
 def from_papercall():
     """
@@ -338,6 +350,63 @@ def parse_lanyrd(ele):
     # This gets the conference tags.
     try:
         data['tags'] = ele.xpath('.//ul[@class="tags inline-tags meta"]/li/a/text()')
+    except Exception:
+        pass
+
+    return data
+
+
+def from_linuxfoundation():
+    """
+    Function to scrape conferences' info from:
+    http://events.linuxfoundation.org
+    Loads the page, gets the conference info elements, and sends each element
+    to parse_linuxfoundation() for parsing
+    """
+    page = requests.get('http://events.linuxfoundation.org')
+    tree = html.fromstring(page.content)
+    conf_list = tree.xpath('//div[@class="view-content"]')[2].xpath('./*')
+    for i in range(len(conf_list)):
+        if conf_list[i].xpath('name()') == 'h3':
+            break
+    conf_list = conf_list[:i]
+    total = [parse_linuxfoundation(ele) for ele in conf_list]
+    return total
+
+
+def parse_linuxfoundation(ele):
+    """
+    Function to parse info passed by from_linuxfoundation() function.
+    Returns conferences' info in a JSON format, like other parser functions.
+    """
+    data = dict.fromkeys(metadata)
+    data['source'] = 'http://events.linuxfoundation.org'
+    # This gets the conference title.
+    try:
+        title = ele.xpath('.//a')[1]
+        data['title'] = title.text_content().strip()
+    except Exception:
+        pass
+    # This gets the conference link.
+    try:
+        data['link'] = title.attrib['href']
+    except Exception:
+        pass
+    # This gets the conference time.
+    try:
+        date_with_loc = ele.xpath('.//div[@class="views-field views-field-field-events-date"]')[0]
+        date_with_loc = date_with_loc.text_content().strip().split('|')
+        data['time'] = date_with_loc[0].strip()
+    except Exception:
+        pass
+    # This gets the conference location.
+    try:
+        data['location'] = date_with_loc[1].strip()
+    except Exception:
+        pass
+    # This gets the conference description.
+    try:
+        data['description'] = ele.xpath('.//div[@class="field field-type-text-with-summary"]/text()')[0].strip()
     except Exception:
         pass
 
