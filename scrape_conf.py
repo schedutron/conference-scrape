@@ -48,7 +48,6 @@ def complete_check():
         check(attrib)
         print('-*-'*33)
 
-
 def from_papercall():
     """
     Function to scrape conferences' info from https://www.papercall.io
@@ -448,3 +447,4 @@ def parse_linuxfoundation(ele):
         pass
 
     return data
+  
