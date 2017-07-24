@@ -7,6 +7,7 @@ http://www.pycon.org (PyCon Calender) - Done
 http://lanyrd.com/topics/open-source/
 http://events.linuxfoundation.org
 https://twitter.com/PythonEvents
+https://www.mozilla.org/en-US/contribute/events/
 """
 from lxml import html
 # import requests, datetime, ... can be used but it's against PEP8.
