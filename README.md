@@ -3,6 +3,24 @@ Scraping list of open source conferences all over the world.
 
 For a quick demo, do:
 ```
+scrapy crawl papercall -o papercall.json
+```
+(Currently only scraping from [papercall.io](http://papercall.io) has been implemented with Scrapy.)
+
+This will create a papercall.json file in your working directory. Here's a sample of it's contents:
+```
+[
+{"title": "Pro Event: dev up Conference 2017", "description": "Offers travel assistance; Our primary audience is the developer community and the ecosystem around developers. If you have ...", "location": "St. Louis, MO", "time": "Closes July 31, 2017 23:00 UTC", "tags": null, "link": "http://www.devupconf.org", "source": "https://www.papercall.io"},
+{"title": "Pro Event: GraphConnect New York", "description": "Share Your Impact Story\r\n\r\n\r\n* **Impact on Innovation**: Where are graphs and Neo4j making a di...", "location": "New York City", "time": "Closes August 01, 2017 07:00 UTC", "tags": ["Impact on technology", "Impact on business", "Deeply technical", "Best practices", "Neo4j for good", "Scaling neo4j", "Data journalism", "Neo4j in the cloud", "Neo4j partner", "Community and open source", "Customer story", "Impact on innovation", "Graph analytics/compute"], "link": "http://graphconnect.com", "source": "https://www.papercall.io"},
+{"title": "Pro Event: DNN Summit 2018", "description": "Offers travel assistance; DNN Summit is looking for session submissions on a wide variety of topics.  Our event supports tw...", "location": "Denver, CO", "time": "Closes August 15, 2017 23:00 UTC", "tags": [".net-core", "Client-side", "Performance", "Seo", "Security", "Marketing", "Administration", "Dnn"], "link": "http://www.dnnsummit.org", "source": "https://www.papercall.io"},
+{"title": "Pro Event: PyCascades 2018", "description": "Offers travel assistance; Encourage people you know to submit - especially those who wouldn\u2019t normally do so and/or might n...", "location": "Vancouver, BC", "time": "Closes August 29, 2017 12:00 UTC", "tags": null, "link": "http://www.pycascades.com", "source": "https://www.papercall.io"},
+{"title": "Pro Event: JVMCON", "description": "Offers travel assistance; We are looking for two types of sessions\r\n\r\n### Talk (60 minutes)\r\n- Should have a clear relat...", "location": "Cinemec, Ede, The Netherlands", "time": "Closes October 17, 2017 23:00 UTC", "tags": null, "link": "http://www.jvmcon.com", "source": "https://www.papercall.io"},
+{"title": "GothamGo Go Language Conference", "description": "Offers travel assistance; Share your experience! Submit your presentation proposal to GothamGo, New York City's Go language...", "location": "New York City, Oct 5-6 2017", "time": "Closes July 28, 2017 03:59 UTC", "tags": ["Go", "Golang"], "link": "http://gothamgo.com", "source": "https://www.papercall.io"},
+{"title": "DevOpsDays Nashville 2017", "description": "There are three ways to propose a session:\r\n\r\n1.  ***A proposal for a talk/panel*** during the co...", "location": "Nashville, Tennessee", "time": "Closes July 28, 2017 23:00 UTC", "tags": null, "link": "https://www.devopsdays.org/events/2017-nashville/", "source": "https://www.papercall.io"},
+]
+```
+You can scrape without scrapy as well:
+```
 import scrape_conf
 total = scrape_conf.from_paper_call()
 ```
