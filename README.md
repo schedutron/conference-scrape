@@ -3,11 +3,12 @@ Scraping list of open source conferences all over the world.
 
 For a quick demo, do:
 ```
-scrapy crawl papercall -o papercall.json
+scrapy crawl papercall -o info.json
 ```
-(Currently only scraping from [papercall.io](http://papercall.io) has been implemented with Scrapy.)
+In place of `papercall`, `oreilly` can also be used.
+(Currently only scraping from [papercall.io](http://papercall.io) and [oreilly.com/conferences/](https://www.oreilly.com/conferences/)has been implemented with Scrapy.)
 
-This will create a papercall.json file in your working directory. Here's a sample of it's contents:
+This will create a info.json file in your working directory. Here's a sample of it's contents:
 ```
 [
 {"title": "Pro Event: dev up Conference 2017", "description": "Offers travel assistance; Our primary audience is the developer community and the ecosystem around developers. If you have ...", "location": "St. Louis, MO", "time": "Closes July 31, 2017 23:00 UTC", "tags": null, "link": "http://www.devupconf.org", "source": "https://www.papercall.io"},
