@@ -14,7 +14,7 @@ class PapercallSpider(scrapy.Spider):
     ]
 
     def parse(self, response):
-        """This is the default parsing function called for urls."""
+        """This is the default parsing function called for start urls."""
 
         def parse_papercall(ele):
             """
@@ -89,3 +89,64 @@ class PapercallSpider(scrapy.Spider):
                 next_page.extract_first(),
                 callback=self.parse
             )
+
+
+class OreillySpider(scrapy.Spider):
+    name = "oreilly"
+    start_urls = [
+        'https://www.oreilly.com/conferences/',
+    ]
+
+    def parse(self, response):
+        """This is the default parsing function called for start urls."""
+
+        def parse_oreilly(ele):
+            """
+            Helper function to parse info passed by from_oeilly() function.
+            Returns conference info in a JSON format, like other helper parser
+            functions.
+            """
+            data = dict.fromkeys(metadata)
+            data['source'] = 'https://www.oreilly.com/conferences/'
+            # This gets the conference title.
+            try:
+                text = ele.xpath('.//h3//text()')
+                data['title'] = text[0].strip()
+            except Exception:
+                pass
+            # This gets the conference date.
+            try:
+                start_date = text[2]
+                remaining_date_with_loc = text[3].strip()
+                comma_pos = remaining_date_with_loc.find(',')
+                comma_pos = remaining_date_with_loc.find(',', comma_pos+1)
+                remaining_date = remaining_date_with_loc[:comma_pos]
+                data['time'] = start_date + remaining_date.strip('\u2013')
+                # Following adds training dates.
+                training_dates = text[4].strip()
+                data['time'] += ' ' + training_dates
+            except Exception as e:
+                pass
+            # This gets the conference location.
+            try:
+                data['location'] = remaining_date_with_loc[comma_pos+1:]
+                data['location'] = data['location'].strip()
+            except Exception:
+                pass
+            # This gets the conference link.
+            try:
+                data['link'] = ele.xpath('.//h3/a/@href')[0]
+            except Exception:
+                pass
+            # This gets the conference description.
+            try:
+                data['description'] = ele.xpath('.//p')[0].text_content()
+                data['description'] = data['description'].strip()
+            except Exception:
+                pass
+
+            return data
+
+        conf_list = response.xpath("//li[@class='conf_event']")
+        for ele in conf_list:
+            yield parse_oreilly(html.fromstring(ele.extract()))
