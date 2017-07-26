@@ -5,8 +5,8 @@ For a quick demo, do:
 ```
 scrapy crawl papercall -o info.json
 ```
-In place of `papercall`, `oreilly` can also be used.
-(Currently only scraping from [papercall.io](http://papercall.io) and [oreilly.com/conferences/](https://www.oreilly.com/conferences/)has been implemented with Scrapy.)
+In place of `papercall`, `oreilly` and `opensource` can also be used.
+(Currently only scraping from [papercall.io](http://papercall.io),  [oreilly.com](https://www.oreilly.com/conferences/) and [opensource.com](https://opensource.com/resources/conferences-and-events-monthly) has been implemented with Scrapy.)
 
 This will create a info.json file in your working directory. Here's a sample of it's contents:
 ```

@@ -102,7 +102,7 @@ class OreillySpider(scrapy.Spider):
 
         def parse_oreilly(ele):
             """
-            Helper function to parse info passed by from_oeilly() function.
+            Helper function to parse info passed by sel.parse() method.
             Returns conference info in a JSON format, like other helper parser
             functions.
             """
@@ -150,3 +150,73 @@ class OreillySpider(scrapy.Spider):
         conf_list = response.xpath("//li[@class='conf_event']")
         for ele in conf_list:
             yield parse_oreilly(html.fromstring(ele.extract()))
+
+
+class OpensourceSpider(scrapy.Spider):
+    name = "opensource"
+    start_urls = [
+        "https://opensource.com/resources/conferences-and-events-monthly",
+    ]
+
+    def parse(self, response):
+        "As usual, the default parsing function for response text."
+
+        def parse_opensource(ele):
+            """
+            Helper function to parse info passed by sefl.parse() method.
+            Returns conference info in a JSON format, like other parser
+            functions.
+            """
+            data = dict.fromkeys(metadata)
+            data['source'] = \
+            "https://opensource.com/resources/conferences-and-events-monthly"
+            # This gets the conference title.
+            try:
+                data['title'] = ele.xpath('.//b/text()')[0].strip()
+            except Exception:
+                pass
+            # This gets the conference description.
+            try:
+                des = '\n'.join(
+                    [item.text_content() for item in ele.xpath('.//p')]
+                    )
+                if len(des) > 500:
+                    des = des[:497] + '...'
+                data['description'] = des
+            except Exception:
+                pass
+            # This gets the conference date(s)
+            try:
+                dates = ele.xpath('./div[4]/div/span/text()')
+                data['time'] = ' to '.join(dates).strip()
+            except Exception:
+                pass
+            # This gets the conference location
+            try:
+                data['location'] = ele.xpath('./div[5]/div/text()')[0].strip()
+            except Exception:
+                pass
+            # This gets the conference link
+            try:
+                data['link'] = ele.xpath('./div[6]/div/a/text()')[0]
+            except Exception:
+                pass
+
+            return data
+
+        container = response.xpath(
+            '//*[@id="mini-panel-conferences_events_content"]/'
+            + 'div[1]/div/div/div/div[2]'
+            )
+        conf_list = container[0].xpath('./div')
+        for ele in conf_list:
+            yield parse_opensource(html.fromstring(ele.extract()))
+
+        # Pagination stuff below.
+        next_page_link = response.xpath(
+            '//*[@id="mini-panel-conferences_events_content"]/'
+            + 'div[1]/div/div/div/div[3]/div/ul/li[2]/a/@href'
+            ).extract_first()
+
+        if (next_page_link is not None) and conf_list:
+            yield response.follow(next_page_link, callback=self.parse)
