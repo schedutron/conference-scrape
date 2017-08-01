@@ -1,3 +1,4 @@
+"""Here are spider declarations for conference-info scraping."""
 from constants import *  # Gets metadata info.
 from lxml import html
 import scrapy
@@ -159,7 +160,7 @@ class OpensourceSpider(scrapy.Spider):
 
         def parse_opensource(ele):
             """
-            Helper function to parse info passed by sefl.parse() method.
+            Helper function to parse info passed by self.parse() method.
             Returns conference info in a JSON format, like other parser
             functions.
             """
@@ -216,3 +217,61 @@ class OpensourceSpider(scrapy.Spider):
 
         if (next_page_link is not None) and conf_list:
             yield response.follow(next_page_link, callback=self.parse)
+
+
+class LanyrdSpider(scrapy.Spider):
+    name = "lanyrd"
+    start_urls = [
+        'http://lanyrd.com/topics/open-source',
+        ]
+
+    def parse(self, response):
+        """Default parsing function for response text."""
+
+        def parse_lanyrd(ele):
+            """
+            Helper function to parse info passed by self.parse() function.
+            Returns conferences' info in a JSON format, like other parser
+            functions.
+            """
+            data = dict.fromkeys(metadata)
+            data['source'] = 'http://lanyrd.com/topics/open-source'
+            # This gets the conference title.
+            try:
+                title_ele = ele.xpath('.//h4/a')[0]
+                data['title'] = title_ele.text_content().strip()
+            except Exception:
+                pass
+            # This gets the conference link.
+            try:
+                data['link'] = data['source'] + title_ele.attrib['href']
+            except Exception:
+                pass
+            # This gets the conference location.
+            try:
+                reversed_location_chunks = ele.xpath(
+                    './/p[@class="location"]/a/text()'
+                    )
+                data['location'] = ', '.join(
+                    [chunk.strip() for chunk in reversed_location_chunks[1:][::-1]]
+                    )
+            except Exception:
+                pass
+            # This gets the conference time.
+            try:
+                data['time'] = ele.xpath('.//p[@class="date"]')[0].text_content()
+            except Exception:
+                pass
+            # This gets the conference tags.
+            try:
+                data['tags'] = ele.xpath(
+                    './/ul[@class="tags inline-tags meta"]/li/a/text()'
+                    )
+            except Exception:
+                pass
+
+            return data
+
+        conf_list = response.xpath('//li[@class="conference vevent"]')
+        for ele in conf_list:
+            yield(parse_lanyrd(html.fromstring(ele.extract())))

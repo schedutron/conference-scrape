@@ -4,9 +4,9 @@ https://www.papercall.io - Done
 https://www.oreilly.com/conferences/ - Done
 https://opensource.com/resources/conferences-and-events-monthly - Done
 http://www.pycon.org (PyCon Calender) - Done
-http://lanyrd.com/topics/open-source/
-http://events.linuxfoundation.org
-https://twitter.com/PythonEvents
+http://lanyrd.com/topics/open-source/ - Done
+http://events.linuxfoundation.org - Done
+https://twitter.com/PythonEvents - Done
 https://www.mozilla.org/en-US/contribute/events/
 """
 from constants import *  # Gets metadata info.
