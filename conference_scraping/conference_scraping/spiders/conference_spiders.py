@@ -1,10 +1,6 @@
+from constants import *  # Gets metadata info.
 from lxml import html
 import scrapy
-
-metadata = [
-    'title', 'description', 'location',
-    'time', 'tags', 'link', 'source'
-]
 
 
 class PapercallSpider(scrapy.Spider):

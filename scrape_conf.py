@@ -9,21 +9,13 @@ http://events.linuxfoundation.org
 https://twitter.com/PythonEvents
 https://www.mozilla.org/en-US/contribute/events/
 """
+from constants import *  # Gets metadata info.
 from lxml import html
 # import requests, datetime, ... can be used but it's against PEP8.
 import datetime
 import json
 import re
 import requests
-
-# Duplicates can be removed by comparing links.
-# Timezone problems must be addressed, if any.
-# If tags are absent, they can be added by analysing description.
-# Maybe later we can add conference image icons as well.
-metadata = [
-    'title', 'description', 'location',
-    'time', 'tags', 'link', 'source'
-]
 
 
 def check(attrib):
