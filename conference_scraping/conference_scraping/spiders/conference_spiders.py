@@ -165,8 +165,8 @@ class OpensourceSpider(scrapy.Spider):
             functions.
             """
             data = dict.fromkeys(metadata)
-            data['source'] = \
-            "https://opensource.com/resources/conferences-and-events-monthly"
+            data['source'] = "https://opensource.com/resources/"\
+                + "conferences-and-events-monthly"
             # This gets the conference title.
             try:
                 data['title'] = ele.xpath('.//b/text()')[0].strip()
@@ -253,13 +253,17 @@ class LanyrdSpider(scrapy.Spider):
                     './/p[@class="location"]/a/text()'
                     )
                 data['location'] = ', '.join(
-                    [chunk.strip() for chunk in reversed_location_chunks[1:][::-1]]
-                    )
+                    [
+                        chunk.strip()
+                        for chunk in reversed_location_chunks[1:][::-1]
+                    ]
+                )
             except Exception:
                 pass
             # This gets the conference time.
             try:
-                data['time'] = ele.xpath('.//p[@class="date"]')[0].text_content()
+                data['time'] = ele.xpath('.//p[@class="date"]')[0]
+                data['time'] = data['time'].text_content()
             except Exception:
                 pass
             # This gets the conference tags.
@@ -275,3 +279,67 @@ class LanyrdSpider(scrapy.Spider):
         conf_list = response.xpath('//li[@class="conference vevent"]')
         for ele in conf_list:
             yield(parse_lanyrd(html.fromstring(ele.extract())))
+
+
+class LinuxFoundationSpider(scrapy.Spider):
+    name = "linuxfoundation"
+    start_urls = [
+        "http://events.linuxfoundation.org",
+    ]
+
+    def parse(self, response):
+        """Default parsing function for response text."""
+
+        def parse_linuxfoundation(ele):
+            """
+            Function to parse info passed by from_linuxfoundation() function.
+            Returns conferences' info in a JSON format, like other parser
+            functions.
+            """
+            data = dict.fromkeys(metadata)
+            data['source'] = 'http://events.linuxfoundation.org'
+            # This gets the conference title.
+            try:
+                title = ele.xpath('.//a')[1]
+                data['title'] = title.text_content().strip()
+            except Exception:
+                pass
+            # This gets the conference link.
+            try:
+                data['link'] = title.attrib['href']
+            except Exception:
+                pass
+            # This gets the conference time.
+            try:
+                date_with_loc = ele.xpath(
+                    './/div[@class="views-field '
+                    + 'views-field-field-events-date"]'
+                )[0]
+                date_with_loc = date_with_loc.text_content().strip().split('|')
+                data['time'] = date_with_loc[0].strip()
+            except Exception:
+                pass
+            # This gets the conference location.
+            try:
+                data['location'] = date_with_loc[1].strip()
+            except Exception:
+                pass
+            # This gets the conference description.
+            try:
+                data['description'] = ele.xpath(
+                    './/div[@class="field '
+                    + 'field-type-text-with-summary"]/text()'
+                )[0].strip()
+            except Exception:
+                pass
+
+            return data
+
+        conf_list = response.xpath('//div[@class="view-content"]')[2]
+        conf_list = conf_list.xpath('./*')
+        for i in range(len(conf_list)):
+            if conf_list[i].xpath('name()').extract_first() == 'h3':
+                break
+        conf_list = conf_list[:i]
+        for ele in conf_list:
+            yield parse_linuxfoundation(html.fromstring(ele.extract()))

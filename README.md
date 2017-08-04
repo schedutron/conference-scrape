@@ -2,12 +2,13 @@
 Scraping list of open source conferences all over the world.
 
 For a quick demo, do:
-```
-scrapy crawl papercall -o info.json
-```
-In place of `papercall`, `oreilly`, `opensource` and `lanyrd` can also be used.
-(Currently only scraping from [papercall.io](http://papercall.io),  [oreilly.com](https://www.oreilly.com/conferences/), [opensource.com](https://opensource.com/resources/conferences-and-events-monthly) and
-[lanyrd.com](http://lanyrd.com/topics/open-source) has been implemented with Scrapy.)
+
+`scrapy crawl papercall -o info.json`
+
+In place of `papercall`, `oreilly`, `opensource`, `lanyrd` and `linuxfoundation` can also be used.
+(Currently only scraping from [papercall.io](http://papercall.io),  [oreilly.com](https://www.oreilly.com/conferences/), [opensource.com](https://opensource.com/resources/conferences-and-events-monthly),
+[lanyrd.com](http://lanyrd.com/topics/open-source) and
+[linuxfoundation.org](http://events.linuxfoundation.org) has been implemented with Scrapy.)
 
 This will create a info.json file in your working directory. Here's a sample of it's contents:
 ```
